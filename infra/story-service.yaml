@@ -1,0 +1,43 @@
+# story-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: story-deployment
+  labels:
+    app: story
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: story
+  template:
+    metadata:
+      labels:
+        app: story
+    spec:
+      containers:
+        - name: meta-story-service
+          image: metamedia/meta-story-service:latest
+          ports:
+            - containerPort: 3003
+          volumeMounts:           
+            - name: public-volume  
+              mountPath: /app/public  
+      volumes:                   
+        - name: public-volume   
+          emptyDir: {}           
+
+---
+# story-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: meta-story-service
+spec:
+  selector:
+    app: story
+  ports:
+    - name: story
+      protocol: TCP
+      port: 3003
+      targetPort: 3003

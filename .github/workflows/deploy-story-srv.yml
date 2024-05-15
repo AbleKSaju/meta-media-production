@@ -1,0 +1,55 @@
+name: deploy-story-srv
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "StoryService/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up environment variables
+        env:
+          SECURE: ${{ secrets.SECURE }}
+          COOKIEPARSERSECRET: ${{ secrets.COOKIEPARSERSECRET }}
+          ACCESS_EXPIRY: ${{ secrets.ACCESS_EXPIRY }}
+          REFRESH_EXPIRY: ${{ secrets.REFRESH_EXPIRY }}
+          ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
+          REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
+        run: |
+          echo "SECURE=${SECURE}" >> StoryService/.env
+          echo "COOKIEPARSERSECRET=${COOKIEPARSERSECRET}" >> StoryService/.env
+          echo "ACCESS_EXPIRY=${ACCESS_EXPIRY}" >> StoryService/.env
+          echo "REFRESH_EXPIRY=${REFRESH_EXPIRY}" >> StoryService/.env
+          echo "ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}" >> StoryService/.env
+          echo "REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY}" >> StoryService/.env
+          echo "CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}" >> StoryService/.env
+          echo "CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}" >> StoryService/.env
+          echo "CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}" >> StoryService/.env
+
+      - run: cd StoryService/ && docker build -t metamedia/meta-story-service .
+
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+
+      - run: docker push metamedia/meta-story-service
+
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}}
+
+      - run: doctl kubernetes cluster kubeconfig save 792c91a1-4934-4a09-aaec-b1919f6a1d5f
+
+      - run: kubectl rollout restart deployment story-deployment

@@ -1,0 +1,23 @@
+# Exclude temporary files
+*.log
+*.tmp
+
+# Exclude dependency directories
+node_modules/
+vendor/
+
+# Exclude build artifacts
+build/
+dist/
+*.o
+*.obj
+
+# Exclude sensitive information
+secrets/
+
+# Exclude large files
+media/
+
+# Exclude documentation
+docs/
+README.md

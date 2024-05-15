@@ -1,0 +1,70 @@
+apiVersion: skaffold/v3
+kind: Config
+build:
+ artifacts:
+  - image: metamedia/meta-user-service 
+    context: ./User-Service
+    sync:
+     manual:
+     - src: ./src/**/*.ts
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  - image: metamedia/meta-auth-service 
+    context: ./Auth-Service
+    sync:
+     manual:
+     - src: ./src/**/*.ts
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  - image: metamedia/meta-post-service 
+    context: ./PostService
+    sync:
+     manual:
+     - src: ./src/**/*.ts
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  - image: metamedia/meta-chat-service 
+    context: ./ChatService
+    sync:
+     manual:
+     - src: ./src/**/*.ts
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  - image: metamedia/meta-story-service 
+    context: ./StoryService
+    sync:
+     manual:
+     - src: ./src/**/*.ts
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  - image: metamedia/meta-client-service 
+    context: ./MetaMedia_Frontend
+    sync:
+     manual:
+     - src: ./src/**/*.tsx
+       dest: .
+     - src: ./MetaMedia_Frontend/*
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  - image: metamedia/meta-3d-service 
+    context: ./3dService
+    sync:
+     manual:
+     - src: ./src/**/*.tsx
+       dest: .
+    docker:
+      dockerfile: Dockerfile
+  
+ local:
+  push: false
+manifests:
+ rawYaml:
+ - ./infra/*
+deploy:
+ kubectl: {}

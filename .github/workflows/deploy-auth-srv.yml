@@ -1,0 +1,67 @@
+name: deploy-auth-srv
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Auth-Service/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up environment variables
+        env:
+          AUTH_EMAIL: ${{ secrets.AUTH_EMAIL }}
+          AUTH_PASS: ${{ secrets.AUTH_PASS }}
+          SESSION_SECRET_KEY: ${{ secrets.SESSION_SECRET_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          SECURE: ${{ secrets.SECURE }}
+          COOKIEPARSERSECRET: ${{ secrets.COOKIEPARSERSECRET }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          BUCKET_REGIONE: ${{ secrets.BUCKET_REGIONE }}
+          BUCKET_ACCESS_KEY: ${{ secrets.BUCKET_ACCESS_KEY }}
+          BUCET_SECRETACCESKEY: ${{ secrets.BUCET_SECRETACCESKEY }}
+          ACCESS_EXPIRY: ${{ secrets.ACCESS_EXPIRY }}
+          REFRESH_EXPIRY: ${{ secrets.REFRESH_EXPIRY }}
+          ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
+          REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+
+        run: |
+          echo "AUTH_EMAIL=${AUTH_EMAIL}" >> Auth-Service/.env
+          echo "AUTH_PASS=${AUTH_PASS}" >> Auth-Service/.env
+          echo "SESSION_SECRET_KEY=${SESSION_SECRET_KEY}" >> Auth-Service/.env
+          echo "JWT_SECRET=${JWT_SECRET}" >> Auth-Service/.env
+          echo "NODE_ENV=${NODE_ENV}" >> Auth-Service/.env
+          echo "SECURE=${SECURE}" >> Auth-Service/.env
+          echo "COOKIEPARSERSECRET=${COOKIEPARSERSECRET}" >> Auth-Service/.env
+          echo "BUCKET_NAME=${BUCKET_NAME}" >> Auth-Service/.env
+          echo "BUCKET_REGIONE=${BUCKET_REGIONE}" >> Auth-Service/.env
+          echo "BUCKET_ACCESS_KEY=${BUCKET_ACCESS_KEY}" >> Auth-Service/.env
+          echo "BUCET_SECRETACCESKEY=${BUCET_SECRETACCESKEY}" >> Auth-Service/.env
+          echo "ACCESS_EXPIRY=${ACCESS_EXPIRY}" >> Auth-Service/.env
+          echo "REFRESH_EXPIRY=${REFRESH_EXPIRY}" >> Auth-Service/.env
+          echo "ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}" >> Auth-Service/.env
+          echo "REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY}" >> Auth-Service/.env
+
+      - run: cd Auth-Service/ && docker build -t metamedia/meta-auth-service .
+
+      - run: docker login -u ${{secrets.DOCKER_USERNAME}}  -p ${{secrets.DOCKER_PASSWORD}}
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+
+      - run: docker push metamedia/meta-auth-service
+
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}}
+
+      - run: doctl kubernetes cluster kubeconfig save 792c91a1-4934-4a09-aaec-b1919f6a1d5f
+
+      - run: kubectl rollout restart deployment auth-deployment

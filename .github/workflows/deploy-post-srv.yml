@@ -1,0 +1,41 @@
+name: deploy-post-srv
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "PostService/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up environment variables
+        env:
+          SESSION_SECRET_KEY: ${{ secrets.SESSION_SECRET_KEY }}
+          COOKIEPARSERSECRET: ${{ secrets.COOKIEPARSERSECRET }}
+
+        run: |
+          echo "SESSION_SECRET_KEY=${SESSION_SECRET_KEY}" >> PostService/.env
+          echo "COOKIEPARSERSECRET=${COOKIEPARSERSECRET}" >> PostService/.env
+
+      - run: cd PostService/ && docker build -t metamedia/meta-post-service .
+
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+
+      - run: docker push metamedia/meta-post-service
+
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}}
+
+      - run: doctl kubernetes cluster kubeconfig save 792c91a1-4934-4a09-aaec-b1919f6a1d5f
+
+      - run: kubectl rollout restart deployment post-deployment

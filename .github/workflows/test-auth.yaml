@@ -1,0 +1,19 @@
+name: test-auth
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Auth-Service/**"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+       - name: Checkout code
+         uses: actions/checkout@v2
+ 
+       - name: Display directory contents
+         run: ls -l Auth-Service/
+
+
+      

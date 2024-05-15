@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Remove spinner arrows for WebKit browsers */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove spinner arrows for Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.highlight-item {
+  flex-shrink: 0; /* Ensure items don't shrink to fit */
+  margin-right: 0.1rem; /* Adjust as needed for spacing between items */
+}
+
+/* Optional: Hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-0.9%);
+    animation-timing-function: cubic-bezier(0.8, 0, 4, 2);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.modal {
+    transition: opacity 0.25s ease;
+  }
+  body.modal-active {
+    overflow-x: hidden;
+    overflow-y: visible !important;
+  }

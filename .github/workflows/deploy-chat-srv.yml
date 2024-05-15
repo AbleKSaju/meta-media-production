@@ -1,0 +1,55 @@
+name: deploy-chat-srv
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ChatService/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up environment variables
+        env:
+          SESSION_SECRET_KEY: ${{ secrets.SESSION_SECRET_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          SECURE: ${{ secrets.SECURE }}
+          COOKIEPARSERSECRET: ${{ secrets.COOKIEPARSERSECRET }}
+          ACCESS_EXPIRY: ${{ secrets.ACCESS_EXPIRY }}
+          REFRESH_EXPIRY: ${{ secrets.REFRESH_EXPIRY }}
+          ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
+          REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+
+        run: |
+          echo "SESSION_SECRET_KEY=${SESSION_SECRET_KEY}" >> ChatService/.env
+          echo "JWT_SECRET=${JWT_SECRET}" >> ChatService/.env
+          echo "NODE_ENV=${NODE_ENV}" >> ChatService/.env
+          echo "SECURE=${SECURE}" >> ChatService/.env
+          echo "COOKIEPARSERSECRET=${COOKIEPARSERSECRET}" >> ChatService/.env
+          echo "ACCESS_EXPIRY=${ACCESS_EXPIRY}" >> ChatService/.env
+          echo "REFRESH_EXPIRY=${REFRESH_EXPIRY}" >> ChatService/.env
+          echo "ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}" >> ChatService/.env
+          echo "REFRESH_SECRET_KEY=${REFRESH_SECRET_KEY}" >> ChatService/.env
+
+      - run: cd ChatService/ && docker build -t metamedia/meta-chat-service .
+
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+
+      - run: docker push metamedia/meta-chat-service
+
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}}
+
+      - run: doctl kubernetes cluster kubeconfig save 792c91a1-4934-4a09-aaec-b1919f6a1d5f
+
+      - run: kubectl rollout restart deployment chat-deployment

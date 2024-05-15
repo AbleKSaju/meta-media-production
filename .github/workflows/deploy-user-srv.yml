@@ -1,0 +1,47 @@
+name: deploy-user-srv
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "User-Service/**"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up environment variables
+        env:
+          SECURE: ${{ secrets.SECURE }}
+          COOKIEPARSERSECRET: ${{ secrets.COOKIEPARSERSECRET }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          BUCKET_REGIONE: ${{ secrets.BUCKET_REGIONE }}
+          BUCKET_ACCESS_KEY: ${{ secrets.BUCKET_ACCESS_KEY }}
+          BUCET_SECRETACCESKEY: ${{ secrets.BUCET_SECRETACCESKEY }}
+          ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
+        run: |
+          echo "SECURE=${SECURE}" >> User-Service/.env
+          echo "COOKIEPARSERSECRET=${COOKIEPARSERSECRET}" >> User-Service/.env
+          echo "BUCKET_NAME=${BUCKET_NAME}" >> User-Service/.env
+          echo "BUCKET_REGIONE=${BUCKET_REGIONE}" >> User-Service/.env
+          echo "BUCKET_ACCESS_KEY=${BUCKET_ACCESS_KEY}" >> User-Service/.env
+          echo "BUCET_SECRETACCESKEY=${BUCET_SECRETACCESKEY}" >> User-Service/.env
+          echo "ACCESS_SECRET_KEY=${ACCESS_SECRET_KEY}" >> User-Service/.env
+      - run: cd User-Service/ && docker build -t metamedia/meta-user-service .
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      - run: docker push  metamedia/meta-user-service
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{secrets.DIGITALOCEAN_ACCESS_TOKEN}}
+      - run: doctl kubernetes cluster kubeconfig save 792c91a1-4934-4a09-aaec-b1919f6a1d5f
+      - run: kubectl rollout restart deployment user-deployment
+
+
+
+
+
+      

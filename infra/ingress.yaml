@@ -1,0 +1,82 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-srv
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/websocket-services: "trip-service"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.org/websocket-services: trip-service
+    nginx.ingress.kubernetes.io/secure-backends: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: meta-media.in
+      http:
+        paths:
+          - path: /api/user/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-user-service
+                port:
+                  number: 3000
+          - path: /api/auth/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-auth-service
+                port:
+                  number: 3001
+          - path: /api/post/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-post-service
+                port:
+                  number: 3002
+          - path: /api/story/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-story-service
+                port: 
+                  number: 3003
+          - path: /api/highlight/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-story-service
+                port: 
+                  number: 3003
+          - path: /api/chat/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-chat-service
+                port: 
+                  number: 3005
+          - path: /api/meta/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-3d-service
+                port:
+                  number: 3006
+          - path: /socket.io/
+            pathType: Prefix
+            backend:
+              service:
+                name: meta-chat-service
+                port:
+                  number: 8081
+          - path: /?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: client-srv
+                port:
+                  number: 5173
+          

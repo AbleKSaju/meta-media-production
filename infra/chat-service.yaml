@@ -1,0 +1,44 @@
+# chat-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-deployment
+  labels:
+    app: chat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat
+  template:
+    metadata:
+      labels:
+        app: chat
+    spec:
+      containers:
+        - name: meta-chat-service
+          image: metamedia/meta-chat-service:latest
+          ports:
+            - containerPort: 3005
+          volumeMounts:           
+            - name: chat-public-volume  
+              mountPath: /app/public  
+      volumes:                   
+        - name: chat-public-volume   
+          emptyDir: {}           
+
+---
+# chat-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: meta-chat-service
+spec:
+  selector:
+    app: chat
+  ports:
+    - name: chat
+      protocol: TCP
+      port: 3005
+      targetPort: 3005
+
