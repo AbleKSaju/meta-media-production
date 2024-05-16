@@ -13,6 +13,5 @@ const server=http.createServer(app)
 dotenv.config()
 connectDB(config)
 expresscofig(app)
-
 app.use('/api',routes(dependencies))
 serverConfig(server,config).startServer()

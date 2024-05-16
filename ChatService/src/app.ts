@@ -11,6 +11,7 @@ import { debounceMiddleware } from './events/DebouncingMiddleware'
 import expressConfig from './express'
 import socketConfig from './socket'
 import { chatConsumer } from './events/KafkaConsumer'
+
 const app=express()
 expressConfig(app)
 dotenv.config()

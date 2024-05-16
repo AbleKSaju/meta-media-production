@@ -58,13 +58,6 @@ spec:
                 name: meta-chat-service
                 port: 
                   number: 3005
-          - path: /api/meta/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: meta-3d-service
-                port:
-                  number: 3006
           - path: /socket.io/
             pathType: Prefix
             backend:
